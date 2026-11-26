@@ -4,20 +4,84 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Games</title>
+<meta property="og:title" content="Games">
+<meta property="og:description" content="One-thumb phone games: Star Thumb, Dead Thumb and Orbit Flip. Tap to play.">
 <style>
-  body{margin:0;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;background:#0b0d14;color:#eef;font-family:system-ui,sans-serif;padding:24px;box-sizing:border-box}
-  h1{margin:0 0 8px;font-size:2rem;letter-spacing:.05em}
-  a{display:block;width:100%;max-width:340px;padding:22px;border-radius:14px;text-decoration:none;color:#fff;font-size:1.4rem;font-weight:700;text-align:center}
+  *{box-sizing:border-box}
+  body{margin:0;min-height:100vh;display:flex;flex-direction:column;align-items:center;gap:18px;background:#0b0d14;color:#eef;font-family:system-ui,sans-serif;padding:32px 20px 40px}
+  h1{margin:0;font-size:2rem;letter-spacing:.05em}
+  .sub{margin:-8px 0 6px;opacity:.7;font-size:.95rem;text-align:center}
+  .card{width:100%;max-width:360px;border-radius:16px;overflow:hidden;box-shadow:0 6px 20px rgba(0,0,0,.35)}
+  .play{display:block;padding:22px 18px;text-decoration:none;color:#fff;font-size:1.45rem;font-weight:700;text-align:center}
+  .play small{display:block;font-weight:400;font-size:.85rem;opacity:.85;margin-top:6px}
+  .play .go{display:inline-block;margin-top:12px;padding:8px 22px;border-radius:999px;background:rgba(255,255,255,.18);font-size:1rem;letter-spacing:.08em}
+  .row{display:flex;background:rgba(0,0,0,.35)}
+  .row button{flex:1;min-height:48px;border:0;background:transparent;color:#fff;font:600 1rem system-ui,sans-serif;cursor:pointer}
+  .row button+button{border-left:1px solid rgba(255,255,255,.15)}
+  .row button:active{background:rgba(255,255,255,.1)}
   .star{background:linear-gradient(135deg,#2a4bff,#8a2be2)}
   .dead{background:linear-gradient(135deg,#7a0d0d,#2e3b1f)}
   .orbit{background:linear-gradient(135deg,#1A2240,#b8860b)}
-  small{display:block;font-weight:400;font-size:.85rem;opacity:.8;margin-top:6px}
+  .all{width:100%;max-width:360px;min-height:54px;border:2px solid #eef;border-radius:14px;background:transparent;color:#eef;font:700 1.1rem system-ui,sans-serif;cursor:pointer;margin-top:6px}
+  #toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:#eef;color:#0b0d14;padding:10px 18px;border-radius:999px;font-weight:600;opacity:0;transition:opacity .2s;pointer-events:none}
+  #toast.on{opacity:1}
 </style>
 </head>
 <body>
   <h1>Games</h1>
-  <a class="star" href="star-thumb/">Star Thumb<small>One-thumb space shooter</small></a>
-  <a class="dead" href="dead-thumb/">Dead Thumb<small>One-thumb zombie shooter</small></a>
-  <a class="orbit" href="orbit-flip/">Orbit Flip<small>Tap to flip rings, grab stars</small></a>
+  <p class="sub">One-thumb games for your phone. Tap to play, or share one with a friend.</p>
+
+  <div class="card star">
+    <a class="play" href="star-thumb/">Star Thumb<small>One-thumb space shooter</small><span class="go">PLAY</span></a>
+    <div class="row"><button data-path="star-thumb/" data-name="Star Thumb" data-act="share">Share</button><button data-path="star-thumb/" data-act="copy">Copy link</button></div>
+  </div>
+
+  <div class="card dead">
+    <a class="play" href="dead-thumb/">Dead Thumb<small>One-thumb zombie shooter</small><span class="go">PLAY</span></a>
+    <div class="row"><button data-path="dead-thumb/" data-name="Dead Thumb" data-act="share">Share</button><button data-path="dead-thumb/" data-act="copy">Copy link</button></div>
+  </div>
+
+  <div class="card orbit">
+    <a class="play" href="orbit-flip/">Orbit Flip<small>Tap to flip rings, grab stars</small><span class="go">PLAY</span></a>
+    <div class="row"><button data-path="orbit-flip/" data-name="Orbit Flip" data-act="share">Share</button><button data-path="orbit-flip/" data-act="copy">Copy link</button></div>
+  </div>
+
+  <button class="all" data-path="" data-name="My games" data-act="share">Share all my games</button>
+  <div id="toast"></div>
+
+<script>
+(function () {
+  var base = location.href.replace(/[?#].*$/, '').replace(/index\.html$/, '');
+  if (base.slice(-1) !== '/') base += '/';
+  var toast = document.getElementById('toast'), t;
+  function say(msg) {
+    toast.textContent = msg; toast.classList.add('on');
+    clearTimeout(t); t = setTimeout(function () { toast.classList.remove('on'); }, 1800);
+  }
+  function copy(url) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(function () { say('Link copied'); }, function () { fallback(url); });
+    } else { fallback(url); }
+  }
+  function fallback(url) {
+    var ta = document.createElement('textarea'); ta.value = url; ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select();
+    var ok = false; try { ok = document.execCommand('copy'); } catch (e) {}
+    document.body.removeChild(ta);
+    if (ok) say('Link copied'); else window.prompt('Copy this link:', url);
+  }
+  document.querySelectorAll('button[data-act]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var url = base + b.getAttribute('data-path');
+      if (b.getAttribute('data-act') === 'share' && navigator.share) {
+        var name = b.getAttribute('data-name');
+        navigator.share({ title: name, text: 'Play ' + name + ' on your phone:', url: url }).catch(function () {});
+      } else {
+        copy(url);
+      }
+    });
+  });
+})();
+</script>
 </body>
 </html>
