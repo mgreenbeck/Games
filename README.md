@@ -5,7 +5,7 @@ One-thumb phone games, each a single self-contained HTML file.
 | Game | Folder | What it is |
 |------|--------|-----------|
 | Star Thumb | [`star-thumb/`](star-thumb/) | Galaga-style space shooter |
-| Dead Thumb | [`dead-thumb/`](dead-thumb/) | Zombie shooter with gun progression, pistol partners and extra sounds |
+| Dead Thumb | [`dead-thumb/`](dead-thumb/) | Zombie shooter with gun progression (homing missiles included), pistol partners, vehicles up to a Harrier jet, and extra sounds |
 | Orbit Flip | [`orbit-flip/`](orbit-flip/) | Tap to flip between two rings, grab stars, dodge spikes |
 
 `index.html` at the root is the games page: a Play button and Share and Copy link buttons for each game, plus a button to share the whole page.
