@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Orbit Flip</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&amp;display=swap">
+<style>
+body{margin:0;background:#0B1020}
+a{color:#FFC94A}a:hover{color:#FFE08A}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden; background: #0B1020; font-family: 'Space Grotesk', system-ui, sans-serif; color: #F4F1EA; user-select: none; -webkit-user-select: none; touch-action: manipulation">
+<div style="position: absolute; left: 0; right: 0; top: 56px; display: flex; flex-direction: column; align-items: center; gap: 4px">
+<div style="font-size: 13px; letter-spacing: 3px; color: #A9B3D1">SCORE</div>
+<div style="font-size: 64px; font-weight: 700; line-height: 1">{{score}}</div>
+<div style="font-size: 13px; color: #A9B3D1">Best {{best}}</div>
+</div>
+<div style="position: absolute; left: 45px; top: 280px; width: 296px; height: 296px; border-radius: 50%; border: 2px solid #2A3558"></div>
+<div style="position: absolute; left: 100px; top: 335px; width: 186px; height: 186px; border-radius: 50%; border: 2px solid #2A3558"></div>
+<div style="position: absolute; left: 175px; top: 410px; width: 40px; height: 40px; border-radius: 50%; background: #1A2240"></div>
+<sc-for list="{{items}}" as="item" hint-placeholder-count="0">
+<sc-if value="{{item.star}}" hint-placeholder-val="{{ true }}">
+<div style="position: absolute; left: {{item.x}}px; top: {{item.y}}px; width: 26px; height: 26px; margin: -13px 0 0 -13px">
+<svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6 6.6.8-4.9 4.5 1.3 6.5L12 17l-5.9 3.3 1.3-6.5L2.5 9.3l6.6-.8z" fill="#FFC94A"></path></svg>
+</div>
+</sc-if>
+<sc-if value="{{item.spike}}" hint-placeholder-val="{{ false }}">
+<div style="position: absolute; left: {{item.x}}px; top: {{item.y}}px; width: 20px; height: 20px; margin: -10px 0 0 -10px; background: #FF6B4A; border-radius: 4px; transform: rotate(45deg); box-shadow: 0 0 12px rgba(255,107,74,0.6)"></div>
+</sc-if>
+</sc-for>
+<div style="position: absolute; left: {{px}}px; top: {{py}}px; width: 24px; height: 24px; margin: -12px 0 0 -12px; border-radius: 50%; background: {{playerColor}}; box-shadow: 0 0 18px rgba(244,241,234,0.7)"></div>
+<sc-if value="{{showReady}}" hint-placeholder-val="{{ true }}">
+<div style="position: absolute; left: 24px; right: 24px; bottom: 120px; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center">
+<div style="font-size: 40px; font-weight: 700">Orbit Flip</div>
+<div style="font-size: 17px; color: #C9D0E6; line-height: 1.4">Tap anywhere to flip between the two rings.<br>Grab the stars. Dodge the red spikes.</div>
+<div style="margin-top: 8px; font-size: 15px; font-weight: 700; color: #FFC94A; letter-spacing: 2px">TAP TO START</div>
+</div>
+</sc-if>
+<sc-if value="{{showOver}}" hint-placeholder-val="{{ false }}">
+<div style="position: absolute; left: 24px; right: 24px; bottom: 120px; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center">
+<div style="font-size: 36px; font-weight: 700; color: #FF8A70">Crashed!</div>
+<div style="font-size: 17px; color: #C9D0E6">{{overLine}}</div>
+<div style="margin-top: 8px; font-size: 15px; font-weight: 700; color: #FFC94A; letter-spacing: 2px">TAP TO PLAY AGAIN</div>
+</div>
+</sc-if>
+<button type="button" aria-label="Flip rings" onPointerDown="{{tap}}" style="position: absolute; inset: 0; width: 100%; height: 100%; background: transparent; border: 0; padding: 0; margin: 0; cursor: pointer; -webkit-tap-highlight-color: transparent"></button>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.CX = 195; this.CY = 430; this.R = [93, 148];
+    this.best = 0;
+    try { this.best = parseInt(localStorage.getItem('orbitFlipBest') || '0', 10) || 0; } catch (e) {}
+    this.reset();
+    this.g.phase = 'ready';
+    this.tap = this.tap.bind(this);
+    this.tick = this.tick.bind(this);
+  }
+  reset() {
+    this.g = { phase: 'play', angle: -Math.PI / 2, lane: 1, r: this.R[1], items: [], next: -Math.PI / 2 + 1.3, speed: 1.5, score: 0, id: 0, overAt: 0, lastLane: 0 };
+    this.spawn();
+  }
+  spawn() {
+    var g = this.g;
+    while (g.next < g.angle + Math.PI * 2 * 0.82) {
+      var lane = Math.random() < 0.5 ? 0 : 1;
+      var kind = Math.random() < 0.62 ? 'spike' : 'star';
+      g.items.push({ id: g.id++, ang: g.next, lane: lane, kind: kind });
+      g.next += 0.55 + Math.random() * 0.4;
+    }
+  }
+  componentDidMount() { this.last = 0; this.raf = requestAnimationFrame(this.tick); }
+  componentWillUnmount() { cancelAnimationFrame(this.raf); }
+  tap(e) {
+    if (e && e.preventDefault) e.preventDefault();
+    var g = this.g;
+    if (g.phase === 'play') { g.lane = 1 - g.lane; return; }
+    if (g.phase === 'over' && performance.now() - g.overAt < 450) return;
+    this.reset();
+  }
+  tick(t) {
+    var dt = this.last ? Math.min((t - this.last) / 1000, 0.05) : 0;
+    this.last = t;
+    var g = this.g;
+    if (g.phase === 'play') {
+      g.speed = Math.min(1.5 + g.score * 0.05, 2.7);
+      g.angle += g.speed * dt;
+      var target = this.R[g.lane];
+      g.r += (target - g.r) * Math.min(1, dt * 20);
+      var keep = [];
+      for (var i = 0; i < g.items.length; i++) {
+        var it = g.items[i];
+        if (it.ang < g.angle - 0.5) continue;
+        var ir = this.R[it.lane];
+        var arc = Math.abs(it.ang - g.angle) * ir;
+        if (arc < 18 && Math.abs(g.r - ir) < 22) {
+          if (it.kind === 'star') { g.score += 1; continue; }
+          g.phase = 'over'; g.overAt = performance.now();
+          if (g.score > this.best) { this.best = g.score; try { localStorage.setItem('orbitFlipBest', String(this.best)); } catch (e) {} }
+        }
+        keep.push(it);
+      }
+      g.items = keep;
+      this.spawn();
+    } else if (g.phase === 'ready') {
+      g.angle += 0.6 * dt;
+      g.next = g.angle + 1.3;
+      g.items = [];
+    }
+    this.forceUpdate();
+    this.raf = requestAnimationFrame(this.tick);
+  }
+  renderVals() {
+    var g = this.g, cx = this.CX, cy = this.CY, R = this.R;
+    var items = g.phase === 'ready' ? [] : g.items.map(function (it) {
+      var r = R[it.lane];
+      return { id: it.id, x: (cx + r * Math.cos(it.ang)).toFixed(1), y: (cy + r * Math.sin(it.ang)).toFixed(1), star: it.kind === 'star', spike: it.kind === 'spike' };
+    });
+    return {
+      score: g.score,
+      best: this.best,
+      items: items,
+      px: (cx + g.r * Math.cos(g.angle)).toFixed(1),
+      py: (cy + g.r * Math.sin(g.angle)).toFixed(1),
+      playerColor: g.phase === 'over' ? '#FF6B4A' : '#F4F1EA',
+      showReady: g.phase === 'ready',
+      showOver: g.phase === 'over',
+      overLine: g.score === 1 ? 'You grabbed 1 star.' : 'You grabbed ' + g.score + ' stars.',
+      tap: this.tap
+    };
+  }
+}
+</script>
+</body>
+</html>

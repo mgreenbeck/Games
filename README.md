@@ -6,8 +6,11 @@ One-thumb phone games, each a single self-contained HTML file.
 |------|--------|-----------|
 | Star Thumb | [`star-thumb/`](star-thumb/) | Galaga-style space shooter |
 | Dead Thumb | [`dead-thumb/`](dead-thumb/) | Zombie shooter with gun progression and pistol partners |
+| Orbit Flip | [`orbit-flip/`](orbit-flip/) | Tap to flip between two rings, grab stars, dodge spikes (source only, see below) |
 
 `index.html` at the root is a simple menu linking to both.
+
+Orbit Flip is saved as its source from Claude's design canvas (`orbit-flip/Main.dc.html`). It needs that canvas to run, so it doesn't play on its own yet and isn't on the menu.
 
 ## Play
 
